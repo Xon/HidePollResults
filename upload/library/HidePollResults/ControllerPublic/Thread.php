@@ -76,13 +76,16 @@ class HidePollResults_ControllerPublic_Thread extends XFCP_HidePollResults_Contr
 	{
 		$parent = parent::actionPollResults();
 
-		$parent->params['canViewPollResults'] = $this->_getPollModel()->canViewPollResults($parent->params['poll']);
-		
-		$responseId = $this->_input->filterSingle('poll_response_id', XenForo_Input::UINT);
-		
-		if ($responseId && !$parent->params['canViewPollResults'])
+		if (($parent instanceof XenForo_ControllerResponse_View) && is_array($parent->params['poll']))
 		{
-			return $this->responseNoPermission();
+			$parent->params['canViewPollResults'] = $this->_getPollModel()->canViewPollResults($parent->params['poll']);
+
+			$responseId = $this->_input->filterSingle('poll_response_id', XenForo_Input::UINT);
+
+			if ($responseId && !$parent->params['canViewPollResults'])
+			{
+				return $this->responseNoPermission();
+			}
 		}
 		
 		return $parent;
