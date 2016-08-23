@@ -10,15 +10,18 @@ class HidePollResults_ControllerPublic_Thread extends XFCP_HidePollResults_Contr
 	public function actionIndex()
 	{
 		$parent = parent::actionIndex();
-		
-		$parent->params['canViewPollResults'] = false;
-		
-		if (empty($parent->params['thread']) || $parent->params['thread']['discussion_type'] != 'poll' || empty($parent->params['poll']))
+
+		if ($parent instanceof XenForo_ControllerResponse_View)
 		{
-			return $parent;
+			$parent->params['canViewPollResults'] = false;
+
+			if (empty($parent->params['thread']) || (isset($parent->params['thread']['discussion_type']) && $parent->params['thread']['discussion_type'] != 'poll') || empty($parent->params['poll']))
+			{
+				return $parent;
+			}
+
+			$parent->params['canViewPollResults'] = $this->_getPollModel()->canViewPollResults($parent->params['poll']);
 		}
-		
-		$parent->params['canViewPollResults'] = $this->_getPollModel()->canViewPollResults($parent->params['poll']);
 		
 		return $parent;
 	}	
