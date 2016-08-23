@@ -8,18 +8,31 @@ class HidePollResults_ControllerPublic_Forum extends XFCP_HidePollResults_Contro
 	 * @return XenForo_ControllerResponse_Abstract
 	 */
 	public function actionAddThread()
-	{	
-		$userId = XenForo_Visitor::getUserId();
-		
-		$pollExtraInputs[$userId] = $this->_input->filter(array(
-			'hide_results' => XenForo_Input::UINT,
-			'until_close' => XenForo_Input::UINT,
+	{
+		$session = false;
+		if (XenForo_Application::isRegistered('session'))
+		{
+			/** @var $session XenForo_Session */
+			$session = XenForo_Application::get('session');
+		}
+
+		$hidePollResultsFormShown = $this->_input->filterSingle('hide_poll_results_form', XenForo_Input::UINT);
+		if (!$hidePollResultsFormShown || !$session)
+		{
+			if ($session)
+			{
+				$session->remove('hidePollResults');
+			}
+
+			return parent::actionAddThread();
+		}
+
+		$inputData = $this->_input->filter(array(
+			'hide_results' => XenForo_Input::BOOLEAN,
+			'until_close' => XenForo_Input::BOOLEAN
 		));
-		
-		$data = XenForo_Application::getSimpleCacheData('HidePollResults');
-		$data[$userId] = $pollExtraInputs[$userId];
-		
-		XenForo_Application::setSimpleCacheData('HidePollResults', $data);
+
+		$session->set('hidePollResults', $inputData);
 			
 		return parent::actionAddThread();
 	}

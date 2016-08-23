@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="HidePollResults" title="Hide Poll Results" version_string="1.0.3" version_id="3" url="http://xenmediagallery.com" install_callback_class="HidePollResults_Install" install_callback_method="installer" uninstall_callback_class="HidePollResults_Install" uninstall_callback_method="uninstaller">
+<addon addon_id="HidePollResults" title="Hide Poll Results" version_string="1.1.0" version_id="1000130" url="http://xenmediagallery.com" install_callback_class="HidePollResults_Install" install_callback_method="installer" uninstall_callback_class="HidePollResults_Install" uninstall_callback_method="uninstaller">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
   <admin_templates/>
+  <admin_template_modifications/>
   <code_events/>
   <code_event_listeners>
-    <listener event_id="load_class_controller" execute_order="10" callback_class="HidePollResults_Listener" callback_method="extendControllers" active="1" description=""/>
-    <listener event_id="load_class_datawriter" execute_order="10" callback_class="HidePollResults_Listener" callback_method="extendWriters" active="1" description=""/>
-    <listener event_id="load_class_model" execute_order="10" callback_class="HidePollResults_Listener" callback_method="extendModels" active="1" description=""/>
-    <listener event_id="template_hook" execute_order="10" callback_class="HidePollResults_Listener" callback_method="templateHook" active="1" description=""/>
-    <listener event_id="template_post_render" execute_order="10" callback_class="HidePollResults_Listener" callback_method="templatePostRender" active="1" description=""/>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="HidePollResults_Listener" callback_method="extendForumController" active="1" hint="XenForo_ControllerPublic_Forum" description="XenForo_ControllerPublic_Forum"/>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="HidePollResults_Listener" callback_method="extendThreadController" active="1" hint="XenForo_ControllerPublic_Thread" description="XenForo_ControllerPublic_Thread"/>
+    <listener event_id="load_class_datawriter" execute_order="10" callback_class="HidePollResults_Listener" callback_method="extendPollWriter" active="1" hint="XenForo_DataWriter_Poll" description="XenForo_DataWriter_Poll"/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="HidePollResults_Listener" callback_method="extendPollModel" active="1" hint="XenForo_Model_Poll" description="XenForo_Model_Poll"/>
   </code_event_listeners>
   <cron/>
   <email_templates/>
+  <email_template_modifications/>
   <optiongroups/>
   <permissions>
     <permission_groups/>
@@ -38,7 +39,7 @@
   <route_prefixes/>
   <style_properties/>
   <templates>
-    <template title="thread_create_hide_poll_results" version_id="1" version_string="1.0.0"><![CDATA[<xen:if is="{$visitor.permissions.forum.hidePollResults}">
+    <template title="hide_poll_results_thread_create" version_id="1000130" version_string="1.1.0"><![CDATA[<xen:if is="{$visitor.permissions.forum.hidePollResults}">
 	<li><label for="ctrl_poll_hide_results"><input type="checkbox" name="hide_results" value="1" class="Disabler" id="ctrl_poll_hide_results"{xen:checked $poll.hide_results} /> {xen:phrase hide_poll_results}</label>
 		<ul id="ctrl_poll_hide_results_Disabler">
 			<li>
@@ -49,6 +50,7 @@
 			</li>
 		</ul>
 	</li>
+	<input type="hidden" name="hide_poll_results_form" value="1" />
 </xen:if>]]></template>
     <template title="thread_view_hidden_poll_results" version_id="1" version_string="1.0.0"><![CDATA[<div class="overlayScroll pollResultsOverlay">
 	<table class="pollResults">
@@ -62,6 +64,51 @@
 	</table>
 </div>]]></template>
   </templates>
+  <public_template_modifications>
+    <modification template="poll_block" modification_key="HidePollResults_poll_block_append_note" description="Appends some information about poll closure" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<xen:if is="{$poll.canEdit}"><a href="{xen:link threads/poll/edit, $thread}" class="editLink">{xen:phrase edit}</a></xen:if>]]></find>
+      <replace><![CDATA[$0
+<xen:if is="{$poll.close_date} AND {$poll.hide_results} AND {$poll.until_close}">
+	<div class="pollNotes closeDate muted">
+		{xen:phrase the_results_of_this_poll_are_hidden_until_x, 'time={xen:helper datetimehtml, $poll.close_date}'}
+	</div>
+<xen:elseif is="{$poll.hide_results}" />
+	<div class="pollNotes closeDate muted">
+		{xen:phrase the_results_of_this_poll_are_hidden_until_manual}
+	</div>
+</xen:if>]]></replace>
+    </modification>
+    <modification template="poll_block_result" modification_key="HidePollResults_poll_block_result_hide_results" description="Hides the results from the thread view." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[/<ol class="pollResults">(.*?<\/ol>)/is]]></find>
+      <replace><![CDATA[<xen:if is="{$canViewPollResults}">
+$0
+</xen:if>]]></replace>
+    </modification>
+    <modification template="poll_block_vote" modification_key="HidePollResults_poll_block_vote_hide_buttons" description="Hides the view results buttons from the poll block vote form." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[/<input type="button"(.*?)<\/noscript>/is]]></find>
+      <replace><![CDATA[<xen:if is="{$canViewPollResults}">
+$0
+</xen:if>]]></replace>
+    </modification>
+    <modification template="thread_create" modification_key="HidePollResults_thread_create_hide_controls" description="Adds the hide controls to the thread_create form" execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[/<ul id="ctrl_poll_close_Disabler">(.*?<\/ul>)/is]]></find>
+      <replace><![CDATA[$0
+<xen:include template="hide_poll_results_thread_create" />]]></replace>
+    </modification>
+    <modification template="thread_poll_edit" modification_key="HidePollResults_thread_poll_edit_hide_controls_1" description="Adds the hide controls to the thread poll edit form" execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[/<label for="ctrl_close_date">(.*?<\/label>)/is]]></find>
+      <replace><![CDATA[$0
+<xen:if is="{$poll.close_date}">
+	<xen:include template="hide_poll_results_thread_create" />
+</xen:if>]]></replace>
+    </modification>
+    <modification template="thread_poll_edit" modification_key="HidePollResults_thread_poll_edit_hide_controls_2" description="Adds the hide controls to the thread poll edit form" execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[/<ul id="ctrl_close_Disabler">(.*?<\/ul>)/is]]></find>
+      <replace><![CDATA[$0
+<xen:if is="!{$poll.close_date}">
+	<xen:include template="hide_poll_results_thread_create" />
+</xen:if>]]></replace>
+    </modification>
+  </public_template_modifications>
   <bb_code_media_sites/>
-  <template_modifications/>
 </addon>

@@ -22,37 +22,20 @@ class HidePollResults_DataWriter_Poll extends XFCP_HidePollResults_DataWriter_Po
 	 */
 	protected function _preSave()
 	{
-		$userId = XenForo_Visitor::getUserId();
-		
-		$data = XenForo_Application::getSimpleCacheData('HidePollResults');
-		
-		if (!empty($data[$userId]))
+		$session = false;
+		if (XenForo_Application::isRegistered('session'))
 		{
-			$this->bulkSet($data[$userId]);
+			/** @var $session XenForo_Session */
+			$session = XenForo_Application::get('session');
 		}
-		
+
+		if ($session && $session->get('hidePollResults'))
+		{
+			$this->bulkSet($session->get('hidePollResults'));
+
+			$session->remove('hidePollResults');
+		}
+
 		return parent::_preSave();
 	}
-	
-	/**
-	 * Post-save handling.
-	 */
-	protected function _postSave()
-	{
-		if ($this->isChanged('hide_results') || $this->isChanged('until_close'))
-		{		
-			$userId = XenForo_Visitor::getUserId();
-			
-			$data = XenForo_Application::getSimpleCacheData('HidePollResults');
-			
-			if (!empty($data[$userId]))
-			{
-				unset($data[$userId]);
-				
-				XenForo_Application::setSimpleCacheData('HidePollResults', $data);
-			}
-		}
-		
-		return parent::_postSave();
-	}	
 }
