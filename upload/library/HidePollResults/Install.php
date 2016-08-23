@@ -9,7 +9,7 @@ class HidePollResults_Install
 			// note: this can't be phrased
 			throw new XenForo_Exception('This add-on requires XenForo 1.2.0 or higher.', true);
 		}
-		
+
 		self::addRemoveColumn('xf_poll', 'hide_results', 'add', "TINYINT(3) UNSIGNED NOT NULL DEFAULT '0'", 'close_date');
 		self::addRemoveColumn('xf_poll', 'until_close', 'add', "TINYINT(3) UNSIGNED NOT NULL DEFAULT '0'", 'hide_results');
 	}

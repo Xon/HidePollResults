@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="HidePollResults" title="Hide Poll Results" version_string="1.1.0" version_id="1000130" url="http://xenmediagallery.com" install_callback_class="HidePollResults_Install" install_callback_method="installer" uninstall_callback_class="HidePollResults_Install" uninstall_callback_method="uninstaller">
+<addon addon_id="HidePollResults" title="Hide Poll Results" version_string="1.1.1" version_id="1010170" url="http://xenmediagallery.com" install_callback_class="HidePollResults_Install" install_callback_method="installer" uninstall_callback_class="HidePollResults_Install" uninstall_callback_method="uninstaller">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
@@ -79,9 +79,23 @@
 </xen:if>]]></replace>
     </modification>
     <modification template="poll_block_result" modification_key="HidePollResults_poll_block_result_hide_results" description="Hides the results from the thread view." execution_order="10" enabled="1" action="preg_replace">
-      <find><![CDATA[/<ol class="pollResults">(.*?<\/ol>)/is]]></find>
+      <find><![CDATA[/<li class="pollResult \{xen:if \$response.hasVoted, voted\}">(.*?)<\/li>/is]]></find>
       <replace><![CDATA[<xen:if is="{$canViewPollResults}">
 $0
+<xen:else />
+<li class="pollResult {xen:if $response.hasVoted, voted}">
+	<xen:if is="{$response.hasVoted}">
+		<div class="votedIconCell" title="{xen:phrase your_vote}">*</div>
+	<xen:else />
+		<div class="votedIconCell"></div>
+	</xen:if>
+	<h3 class="optionText" {xen:if $response.hasVoted, 'title="{xen:phrase your_vote}"'}>
+		{$response.response}
+	</h3>
+	<div class="barCell"></div>
+	<div class="count"></div>
+	<div class"percentage"></div>
+</li>
 </xen:if>]]></replace>
     </modification>
     <modification template="poll_block_vote" modification_key="HidePollResults_poll_block_vote_hide_buttons" description="Hides the view results buttons from the poll block vote form." execution_order="10" enabled="1" action="preg_replace">
