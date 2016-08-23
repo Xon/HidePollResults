@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="HidePollResults" title="Hide Poll Results" version_string="1.0.3" version_id="3" url="http://xenmediagallery.com" install_callback_class="HidePollResults_Install" install_callback_method="installer" uninstall_callback_class="HidePollResults_Install" uninstall_callback_method="uninstaller">
+  <admin_navigation/>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates/>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="HidePollResults_Listener" callback_method="extendControllers" active="1" description=""/>
+    <listener event_id="load_class_datawriter" execute_order="10" callback_class="HidePollResults_Listener" callback_method="extendWriters" active="1" description=""/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="HidePollResults_Listener" callback_method="extendModels" active="1" description=""/>
+    <listener event_id="template_hook" execute_order="10" callback_class="HidePollResults_Listener" callback_method="templateHook" active="1" description=""/>
+    <listener event_id="template_post_render" execute_order="10" callback_class="HidePollResults_Listener" callback_method="templatePostRender" active="1" description=""/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <optiongroups/>
+  <permissions>
+    <permission_groups/>
+    <permissions>
+      <permission permission_group_id="forum" permission_id="bypassHiddenPollResultOwn" permission_type="flag" default_value="unset" interface_group_id="forumPermissions" display_order="250"/>
+      <permission permission_group_id="forum" permission_id="bypassHiddenPollResults" permission_type="flag" default_value="unset" interface_group_id="forumModeratorPermissions" display_order="1200"/>
+      <permission permission_group_id="forum" permission_id="hidePollResults" permission_type="flag" default_value="unset" interface_group_id="forumPermissions" display_order="150"/>
+    </permissions>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="hide_poll_results" version_id="1" version_string="1.0.0"><![CDATA[Hide poll results]]></phrase>
+    <phrase title="hide_until_close" version_id="1" version_string="1.0.0"><![CDATA[Hide until poll closes]]></phrase>
+    <phrase title="permission_forum_bypassHiddenPollResultOwn" version_id="1" version_string="1.0.0"><![CDATA[Bypass hidden poll results by self]]></phrase>
+    <phrase title="permission_forum_bypassHiddenPollResults" version_id="1" version_string="1.0.0"><![CDATA[Bypass hidden poll results by all]]></phrase>
+    <phrase title="permission_forum_hidePollResults" version_id="1" version_string="1.0.0"><![CDATA[Hide poll results]]></phrase>
+    <phrase title="results_will_be_hidden_until_poll_closes_explain" version_id="1" version_string="1.0.0"><![CDATA[If the above checkbox is checked then the results of this poll will remain hidden until the poll closes. If the poll does not have a close date or the above checkbox is unchecked then the results will be hidden until the poll is edited and the checkboxes unchecked.]]></phrase>
+    <phrase title="the_results_of_this_poll_are_hidden" version_id="1" version_string="1.0.0"><![CDATA[The results of this poll are hidden.]]></phrase>
+    <phrase title="the_results_of_this_poll_are_hidden_until_manual" global_cache="1" version_id="2" version_string="1.0.1"><![CDATA[The results of this poll are hidden until it is manually edited by the user or site admin.]]></phrase>
+    <phrase title="the_results_of_this_poll_are_hidden_until_x" global_cache="1" version_id="2" version_string="1.0.1"><![CDATA[The results of this poll are hidden until the poll closes on {time}.]]></phrase>
+  </phrases>
+  <route_prefixes/>
+  <style_properties/>
+  <templates>
+    <template title="thread_create_hide_poll_results" version_id="1" version_string="1.0.0"><![CDATA[<xen:if is="{$visitor.permissions.forum.hidePollResults}">
+	<li><label for="ctrl_poll_hide_results"><input type="checkbox" name="hide_results" value="1" class="Disabler" id="ctrl_poll_hide_results"{xen:checked $poll.hide_results} /> {xen:phrase hide_poll_results}</label>
+		<ul id="ctrl_poll_hide_results_Disabler">
+			<li>
+				<label for="ctrl_poll_hide_until_close"><input type="checkbox" name="until_close" value="1" id="ctrl_poll_hide_until_close"{xen:checked $poll.until_close} /> {xen:phrase hide_until_close}</label>
+				<p class="explain">
+					{xen:phrase results_will_be_hidden_until_poll_closes_explain}
+				</p>
+			</li>
+		</ul>
+	</li>
+</xen:if>]]></template>
+    <template title="thread_view_hidden_poll_results" version_id="1" version_string="1.0.0"><![CDATA[<div class="overlayScroll pollResultsOverlay">
+	<table class="pollResults">
+		<tr>
+		<xen:if is="{$poll.close_date} AND {$poll.until_close}">
+			<p>{xen:phrase the_results_of_this_poll_are_hidden_until_x, 'time={xen:raw $closeDate}'}</p>
+		<xen:else />
+			<p>{xen:phrase the_results_of_this_poll_are_hidden_until_manual}</p>
+		</xen:if>
+		</tr>
+	</table>
+</div>]]></template>
+  </templates>
+  <bb_code_media_sites/>
+  <template_modifications/>
+</addon>
